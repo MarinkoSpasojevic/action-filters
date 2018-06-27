@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ActionFilters_Start.Entities;
+using ActionFilters_Start.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,37 +20,87 @@ namespace ActionFilters_Start.Controllers
             _context = context;
         }
 
-        // GET: api/Movie
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IActionResult Get()
         {
-            var a = _context.Movies.ToList();
-            return new string[] { "value1", "value2" };
+            var movies = _context.Movies.ToList();
+
+            return Ok(movies);
         }
 
-        // GET: api/Movie/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        [HttpGet("{id}", Name = "MovieById")]
+        public IActionResult Get(Guid id)
         {
-            return "value";
+            var movie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
+            if(movie == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(movie);
+            }
         }
 
-        // POST: api/Movie
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody] Movie movie)
         {
+            if(movie == null)
+            {
+                return BadRequest("Movie object is null");
+            }
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Movies.Add(movie);
+            _context.SaveChanges();
+
+            return CreatedAtRoute("MovieById", new { id = movie.Id }, movie);
         }
 
-        // PUT: api/Movie/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(Guid id, [FromBody]Movie movie)
         {
+            if(movie == null)
+            {
+                return BadRequest("Movie object is null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var dbMovie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
+            if(dbMovie == null)
+            {
+                return NotFound();
+            }
+
+            dbMovie.Map(movie);
+
+            _context.Movies.Update(dbMovie);
+            _context.SaveChanges();
+
+            return NoContent();
         }
 
-        // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(Guid id)
         {
+            var dbMovie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
+            if (dbMovie == null)
+            {
+                return NotFound();
+            }
+
+            _context.Movies.Remove(dbMovie);
+            _context.SaveChanges();
+
+            return NoContent();
         }
     }
 }
