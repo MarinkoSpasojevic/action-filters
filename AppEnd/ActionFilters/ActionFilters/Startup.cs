@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ActionFilters.ActionFilters;
 using ActionFilters.Entities;
 using ActionFilters.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +29,9 @@ namespace ActionFilters
         {
             services.AddDbContext<MovieContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConString")));
+
+            services.AddScoped<ValidationFilterAttribute>();
+            services.AddScoped<ValidateEntityExistsAttribute<Movie>>();
 
             services.AddMvc();
         }

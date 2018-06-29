@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ActionFilters.ActionFilters;
 using ActionFilters.Entities;
 using ActionFilters.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -26,32 +27,18 @@ namespace ActionFilters.Controllers
         }
 
         [HttpGet("{id}", Name = "MovieById")]
+        [ServiceFilter(typeof(ValidateEntityExistsAttribute<Movie>))]
         public IActionResult Get(Guid id)
         {
-            var movie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
-            if (movie == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(movie);
-            }
+            var dbMovie = HttpContext.Items["entity"] as Movie;
+
+            return Ok(dbMovie);
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult Post([FromBody] Movie movie)
         {
-            if (movie == null)
-            {
-                return BadRequest("Movie object is null");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             _context.Movies.Add(movie);
             _context.SaveChanges();
 
@@ -59,23 +46,11 @@ namespace ActionFilters.Controllers
         }
 
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        [ServiceFilter(typeof(ValidateEntityExistsAttribute<Movie>))]
         public IActionResult Put(Guid id, [FromBody]Movie movie)
         {
-            if (movie == null)
-            {
-                return BadRequest("Movie object is null");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var dbMovie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
-            if (dbMovie == null)
-            {
-                return NotFound();
-            }
+            var dbMovie = HttpContext.Items["entity"] as Movie;
 
             dbMovie.Map(movie);
 
@@ -86,13 +61,10 @@ namespace ActionFilters.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ServiceFilter(typeof(ValidateEntityExistsAttribute<Movie>))]
         public IActionResult Delete(Guid id)
         {
-            var dbMovie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
-            if (dbMovie == null)
-            {
-                return NotFound();
-            }
+            var dbMovie = HttpContext.Items["entity"] as Movie;
 
             _context.Movies.Remove(dbMovie);
             _context.SaveChanges();

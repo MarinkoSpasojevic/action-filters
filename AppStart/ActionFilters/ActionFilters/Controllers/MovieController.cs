@@ -28,14 +28,14 @@ namespace ActionFilters.Controllers
         [HttpGet("{id}", Name = "MovieById")]
         public IActionResult Get(Guid id)
         {
-            var movie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
-            if (movie == null)
+            var dbMovie = _context.Movies.SingleOrDefault(x => x.Id.Equals(id));
+            if (dbMovie == null)
             {
                 return NotFound();
             }
             else
             {
-                return Ok(movie);
+                return Ok(dbMovie);
             }
         }
 
